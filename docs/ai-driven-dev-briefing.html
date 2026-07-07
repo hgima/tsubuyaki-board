@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI駆動開発ってなに？ — tsubuyaki-board 演習に学ぶ導入の考え方</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --fg: #1c2230;
+    --muted: #5b6472;
+    --card: #ffffff;
+    --border: #e2e5ea;
+    --accent: #2f6fed;
+    --accent-bg: #eaf1ff;
+    --layer1: #ffe8cc;
+    --layer1-fg: #8a4b00;
+    --layer2: #d7ecff;
+    --layer2-fg: #0b5aa8;
+    --layer3: #dcf5df;
+    --layer3-fg: #17703a;
+    --code-bg: #eef0f4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171f;
+      --fg: #e7e9ee;
+      --muted: #a2a9b6;
+      --card: #1c212c;
+      --border: #2c3140;
+      --accent: #6ea3ff;
+      --accent-bg: #1c2b47;
+      --layer1: #3a2a12;
+      --layer1-fg: #f0b866;
+      --layer2: #12293d;
+      --layer2-fg: #7cb8f5;
+      --layer3: #123a22;
+      --layer3-fg: #6fd18f;
+      --code-bg: #232837;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14171f; --fg: #e7e9ee; --muted: #a2a9b6; --card: #1c212c; --border: #2c3140;
+    --accent: #6ea3ff; --accent-bg: #1c2b47;
+    --layer1: #3a2a12; --layer1-fg: #f0b866;
+    --layer2: #12293d; --layer2-fg: #7cb8f5;
+    --layer3: #123a22; --layer3-fg: #6fd18f;
+    --code-bg: #232837;
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f8fa; --fg: #1c2230; --muted: #5b6472; --card: #ffffff; --border: #e2e5ea;
+    --accent: #2f6fed; --accent-bg: #eaf1ff;
+    --layer1: #ffe8cc; --layer1-fg: #8a4b00;
+    --layer2: #d7ecff; --layer2-fg: #0b5aa8;
+    --layer3: #dcf5df; --layer3-fg: #17703a;
+    --code-bg: #eef0f4;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN",
+      "Yu Gothic", "Noto Sans JP", sans-serif;
+    line-height: 1.75;
+  }
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
+  }
+  header.hero {
+    margin-bottom: 2.5rem;
+  }
+  .eyebrow {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: 1.9rem;
+    margin: 0.4rem 0 0.8rem;
+    line-height: 1.4;
+  }
+  .lead {
+    color: var(--muted);
+    font-size: 1rem;
+    margin: 0;
+  }
+  .audience-box {
+    margin-top: 1.4rem;
+    padding: 0.9rem 1.1rem;
+    background: var(--accent-bg);
+    border-radius: 10px;
+    font-size: 0.92rem;
+    color: var(--fg);
+  }
+  .audience-box b { color: var(--accent); }
+
+  section {
+    margin: 3rem 0;
+  }
+  h2 {
+    font-size: 1.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid var(--border);
+  }
+  h2 .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+  h3 { font-size: 1.05rem; margin-top: 1.6rem; }
+  p { margin: 0.8rem 0; }
+  ul, ol { padding-left: 1.4rem; }
+  li { margin: 0.35rem 0; }
+  strong { color: var(--fg); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    margin: 1rem 0;
+  }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.2rem 0;
+  }
+  @media (max-width: 600px) {
+    .compare { grid-template-columns: 1fr; }
+  }
+  .compare .card h3 { margin-top: 0; }
+  .compare .card.old { border-left: 4px solid var(--muted); }
+  .compare .card.new { border-left: 4px solid var(--accent); }
+
+  .layers {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin: 1.2rem 0;
+  }
+  .layer {
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--border);
+  }
+  .layer .tag {
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: inline-block;
+    margin-bottom: 0.35rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+  }
+  .layer.l1 { background: var(--layer1); }
+  .layer.l1 .tag { background: rgba(0,0,0,0.08); color: var(--layer1-fg); }
+  .layer.l2 { background: var(--layer2); }
+  .layer.l2 .tag { background: rgba(0,0,0,0.08); color: var(--layer2-fg); }
+  .layer.l3 { background: var(--layer3); }
+  .layer.l3 .tag { background: rgba(0,0,0,0.08); color: var(--layer3-fg); }
+  .layer .files {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+  }
+  .layer code { background: rgba(0,0,0,0.08); }
+
+  .table-scroll { overflow-x: auto; margin: 1.2rem 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.92rem;
+    min-width: 480px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 0.55rem 0.8rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: var(--accent-bg);
+    color: var(--fg);
+    font-weight: 600;
+  }
+  tr:nth-child(even) td { background: rgba(127,127,127,0.05); }
+
+  code {
+    background: var(--code-bg);
+    padding: 0.1rem 0.4rem;
+    border-radius: 5px;
+    font-size: 0.88em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.8rem;
+    margin: 1.2rem 0;
+  }
+  @media (max-width: 700px) {
+    .pillars { grid-template-columns: 1fr 1fr; }
+  }
+  .pillar {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem;
+    text-align: center;
+  }
+  .pillar .n {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .pillar .t {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+
+  .qa {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.3rem;
+    margin: 0.8rem 0;
+  }
+  .qa .q { font-weight: 700; color: var(--accent); }
+  .qa .a { color: var(--fg); margin-top: 0.3rem; }
+
+  .summary-box {
+    background: var(--accent-bg);
+    border-radius: 12px;
+    padding: 1.3rem 1.5rem;
+  }
+  .summary-box ul { margin: 0.4rem 0; }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">社内説明資料</div>
+    <h1>AI駆動開発ってなに？<br>tsubuyaki-board 演習に学ぶ導入の考え方</h1>
+    <p class="lead">「AIに開発を任せる」ときに何が変わり、何を守れば安全に運用できるかを整理した資料です。</p>
+    <div class="audience-box">
+      <b>対象読者</b>：これまでAIエージェントにコードを書かせた経験がない、社内の先輩・後輩・同僚
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">1</span>AI駆動開発とは</h2>
+    <p>これまでのAI活用（ChatGPTに質問する、コード補完を使う）と、ここで言う「AI駆動開発」は少し違います。</p>
+    <div class="compare">
+      <div class="card old">
+        <h3>これまで：チャット・補完</h3>
+        <p style="margin:0">人間が手を動かす。AIは提案するだけで、実行するかどうかは常に人間が決める。</p>
+      </div>
+      <div class="card new">
+        <h3>AI駆動開発：エージェント</h3>
+        <p style="margin:0">AIエージェント（本演習では OpenAI の Codex CLI）が、要件を渡されると<strong>自らファイルを編集し、テストを実行し、コミットまで行う</strong>。人間はレビューと承認に回る。</p>
+      </div>
+    </div>
+    <p>つまりAIに「実行権限」を持たせる開発スタイルです。ここで最初に浮かぶ疑問が次の節です。</p>
+  </section>
+
+  <section>
+    <h2><span class="num">2</span>一番大事な問い：「AIに何でもやらせて大丈夫？」</h2>
+    <p>自律的にコマンドを叩けるということは、裏を返せば人間より速く・大量に事故を起こしうるということでもあります。</p>
+    <ul>
+      <li>誤って <code>rm -rf</code> してしまう</li>
+      <li><code>git push --force</code> で他人の変更を消してしまう</li>
+      <li><code>.env</code> の中身を読んで機密情報が漏れる</li>
+    </ul>
+    <p>この不安に対する答えが <strong>「ハーネス」</strong>（安全装置一式）です。本リポジトリはこのハーネスの実例そのものになっています。</p>
+  </section>
+
+  <section>
+    <h2><span class="num">3</span>ハーネスの仕組み：3層の安全装置</h2>
+    <p>「AIへのお願い」だけに頼らず、<strong>破ろうとしても物理的に破れない層</strong>まで用意しているのがポイントです。</p>
+
+    <div class="layers">
+      <div class="layer l1">
+        <span class="tag">① プロンプト層</span>
+        <div>AIに「これはやってはいけない」と<strong>言葉で約束</strong>させる</div>
+        <div class="files"><code>AGENTS.md</code>（規範書）、<code>.codex/instructions.md</code>（補足）</div>
+      </div>
+      <div class="layer l2">
+        <span class="tag">② 設定層</span>
+        <div>AIツール自体の<strong>権限を絞る</strong>（承認要否・書き込み範囲・環境変数）</div>
+        <div class="files"><code>.codex/config.toml</code></div>
+      </div>
+      <div class="layer l3">
+        <span class="tag">③ 物理層</span>
+        <div>OS・コンテナレベルで<strong>実行自体を止める</strong>（言葉ではなく仕組みで防ぐ）</div>
+        <div class="files"><code>scripts/run-codex.sh</code>（機密ファイルのマスク、規範ファイルの読取専用化）<br><code>containers/codex-devbox/bin/*-guard.sh</code>（危険コマンドの実行拒否）</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">なぜ3層も用意するのか</h3>
+      <p style="margin:0">①は所詮「お願い」なので、AIの判断ミスやプロンプト経由の誘導で破られる可能性があります。③まで用意しておけば、①が機能しなくても最終的に危険操作は物理的にブロックされます。<strong>「AIを信用しない前提」で設計されている</strong>、と考えると分かりやすいです。</p>
+    </div>
+    <p style="color:var(--muted); font-size:0.9rem">
+      具体例：<code>git push --force</code> や <code>git reset --hard</code> は、たとえAIがうっかり実行しようとしても、コンテナ内の wrapper スクリプトが exit code 126 で即座に拒否します。
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="num">4</span>なぜTDDと組み合わせるのか</h2>
+    <p>AIはコードを速く・大量に書けますが、その分「動くつもりで書いたが実は間違っている」コードにも気づきにくいという弱点があります。そこで役立つのが<strong>TDD（テスト駆動開発）</strong>です。</p>
+    <ul>
+      <li><strong>先にテストを書かせる</strong> → 「何ができれば正解か」を先に定義する</li>
+      <li><strong>テストが通ったら初めて実装完了とみなす</strong> → 人間は差分ではなく「テスト結果が緑かどうか」でレビューできる</li>
+      <li><strong>Red（失敗）→ Green（成功）→ Refactor（整理）</strong> のサイクルを型として与える</li>
+    </ul>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>ツール</th><th>役割</th></tr></thead>
+        <tbody>
+          <tr><td>JUnit 5</td><td>テストフレームワーク本体</td></tr>
+          <tr><td>Mockito</td><td>依存をモック化し、対象だけを単体テスト</td></tr>
+          <tr><td>AssertJ</td><td>読みやすいアサーション</td></tr>
+          <tr><td>MockMvc / <code>@DataJpaTest</code></td><td>Web層・DB層それぞれの結合テスト</td></tr>
+          <tr><td>JaCoCo</td><td>テストカバレッジを計測し、閾値未達ならビルドを失敗させる</td></tr>
+          <tr><td>Checkstyle / SpotBugs</td><td>コードの書き方・潜在バグを機械的にチェック</td></tr>
+          <tr><td><code>./mvnw verify</code></td><td>上記すべてを1コマンドで実行する統一入口（Red/Greenの判定装置）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>ポイントは、AIが自己申告する「できました」を信じるのではなく、<strong>機械的に緑/赤で判定できる状態を作る</strong>ことです。</p>
+  </section>
+
+  <section>
+    <h2><span class="num">5</span>自分のチームで応用するには</h2>
+    <p>技術スタックが変わっても、押さえるべき考え方は同じです。柱は次の4つ。</p>
+
+    <div class="pillars">
+      <div class="pillar"><div class="n">1</div><div class="t">テスト</div></div>
+      <div class="pillar"><div class="n">2</div><div class="t">静的解析</div></div>
+      <div class="pillar"><div class="n">3</div><div class="t">カバレッジ計測</div></div>
+      <div class="pillar"><div class="n">4</div><div class="t">実行権限の制御</div></div>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>役割</th><th>本リポ（Java/Spring）</th><th>TypeScript/React</th><th>PHP/WordPress</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>テストランナー</td><td>JUnit 5</td><td>Vitest / Jest</td><td>PHPUnit</td></tr>
+          <tr><td>モック</td><td>Mockito</td><td><code>vi.mock</code> / <code>jest.mock</code></td><td>Brain Monkey / WP_Mock</td></tr>
+          <tr><td>画面・結合テスト</td><td>MockMvc</td><td>React Testing Library</td><td><code>WP_UnitTestCase</code></td></tr>
+          <tr><td>カバレッジ</td><td>JaCoCo</td><td>Istanbul / c8</td><td>Xdebug + PHPUnit</td></tr>
+          <tr><td>静的解析</td><td>Checkstyle + SpotBugs</td><td>ESLint + <code>tsc</code></td><td>PHPStan / PHPCS</td></tr>
+          <tr><td>実行権限の制御</td><td>podman + guardスクリプト</td><td>Docker/Dev Containers + 同様のwrapper</td><td>同左</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>つまり「Java用の特殊な仕組み」ではなく、<strong>言語が変わってもツールを差し替えるだけで同じ設計思想が使い回せる</strong>、ということが重要な学びです。</p>
+  </section>
+
+  <section>
+    <h2><span class="num">6</span>まとめ</h2>
+    <div class="summary-box">
+      <ul>
+        <li>AI駆動開発とは、AIに「実行権限」を持たせて自律的にコードを書かせるスタイル</li>
+        <li>リスクは「ハーネス」で管理する。<strong>お願い（プロンプト）だけでなく、物理的に止める仕組み</strong>まで用意するのが安全運用の鍵</li>
+        <li>TDDと組み合わせることで、AIの成果物を「気合と目視」ではなく「機械的な緑/赤判定」でレビューできる</li>
+        <li>ここで使っているツールはJava固有ではなく、他言語でも同じ役割のツールに置き換えれば同じ設計を再現できる</li>
+      </ul>
+    </div>
+
+    <h3>よくある質問</h3>
+    <div class="qa">
+      <div class="q">Q. AIに何でも実行させて怖くないですか？</div>
+      <div class="a">A. 本演習のように「物理層まで含めた多層防御」を敷けば、想定外の操作は実行前にブロックされます。push や破壊的操作など人間の確認が必要な操作は、自動化の対象外にする設計にできます。</div>
+    </div>
+    <div class="qa">
+      <div class="q">Q. テストを先に書かせると開発が遅くなりませんか？</div>
+      <div class="a">A. AIがテストとコードの両方を書くため、人間が手で書くより体感の負荷は下がることが多いです。むしろ「テストがない状態でAIに大量の変更をさせる」方がレビューコストが跳ね上がります。</div>
+    </div>
+    <div class="qa">
+      <div class="q">Q. 導入のハードルは高くないですか？</div>
+      <div class="a">A. 4本柱（テスト・静的解析・カバレッジ・実行権限制御）は既存のCIやLintの延長で組めます。まずは「AIに自動でやらせてよい範囲」を明文化するところ（本リポで言う <code>AGENTS.md</code>）から始めるのがおすすめです。</div>
+    </div>
+  </section>
+
+  <footer>
+    出典: tsubuyaki-board（AI駆動開発研修用リポジトリ） / 元データ: <code>docs/structure.md</code>
+  </footer>
+
+</div>
+</body>
+</html>
